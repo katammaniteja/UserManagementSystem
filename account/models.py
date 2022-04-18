@@ -3,7 +3,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser,Permiss
 
 # Create your models here.
 class UserManager(BaseUserManager):
-    def create_user(self,email,password,**extra_fields):
+    def create_user(self,email,password,password2=None,**extra_fields):
         if not email:
             raise ValueError("The email must be set")
 
@@ -29,7 +29,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser,PermissionsMixin):
 
     email=models.EmailField(unique=True,null=False)
-    name=models.CharField(max_length=250,null=True)
+    name=models.CharField(max_length=250,null=False)
     tc=models.BooleanField()
     is_staff=models.BooleanField(default=False)
     is_active=models.BooleanField(default=True)
