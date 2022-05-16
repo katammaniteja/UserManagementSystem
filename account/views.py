@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from account.serializers import UserRegistrationSerializer,UserLoginSerializer,UserProfileSerializer
+from account.serializers import UserRegistrationSerializer,UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer
 from account.models import User
 from django.contrib.auth import login,authenticate
 from account.renderers import UserRenderer
@@ -16,6 +16,7 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
+
 class UserRegistrationView(APIView):
     renderer_classes=[UserRenderer]
     def post(self,request):
@@ -25,7 +26,6 @@ class UserRegistrationView(APIView):
             token=get_tokens_for_user(user)
             return Response({'token':token,'msg':'Registration success'},status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
 
 class UserLoginView(APIView):
     renderer_classes=[UserRenderer]
@@ -46,7 +46,13 @@ class UserProfileView(APIView):
     permission_classes=[IsAuthenticated]
     def get(self,request):
         serializer=UserProfileSerializer(request.user)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.data,status=status.HTTP_200_OK) 
 
-
-        
+class UserChangePasswordView(APIView):
+    renderer_classes=[UserRenderer]
+    permission_classes=[IsAuthenticated]
+    def post(self,request):
+        serializer=UserChangePasswordSerializer(data=request.data,context={'user':request.user})
+        if serializer.is_valid():
+            return Response({'msg':'Password Changed Successfully'},status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
