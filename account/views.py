@@ -1,7 +1,14 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from account.serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer, UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer
+from account.serializers import (
+    UserRegistrationSerializer,
+    UserLoginSerializer,
+    UserProfileSerializer,
+    UserChangePasswordSerializer,
+    SendPasswordResetEmailSerializer,
+    UserPasswordResetSerializer,
+)
 from django.contrib.auth import authenticate
 from account.renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -13,8 +20,8 @@ def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
 
     return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
+        "refresh": str(refresh),
+        "access": str(refresh.access_token),
     }
 
 
@@ -26,7 +33,10 @@ class UserRegistrationView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             token = get_tokens_for_user(user)
-            return Response({'token': token, 'msg': 'Registration success'}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"token": token, "msg": "Registration success"},
+                status=status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -36,13 +46,18 @@ class UserLoginView(APIView):
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            email = serializer.data.get('email')
-            password = serializer.data.get('password')
+            email = serializer.data.get("email")
+            password = serializer.data.get("password")
             user = authenticate(email=email, password=password)
             if user is not None:
                 token = get_tokens_for_user(user)
-                return Response({'token': token, 'msg': 'login success'}, status=status.HTTP_200_OK)
-            return Response({'msg': 'Invalid username or password'}, status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {"token": token, "msg": "login success"}, status=status.HTTP_200_OK
+                )
+            return Response(
+                {"msg": "Invalid username or password"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -60,9 +75,13 @@ class UserChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = UserChangePasswordSerializer(data=request.data, context={'user': request.user})
+        serializer = UserChangePasswordSerializer(
+            data=request.data, context={"user": request.user}
+        )
         if serializer.is_valid():
-            return Response({'msg': 'Password Changed Successfully'}, status=status.HTTP_200_OK)
+            return Response(
+                {"msg": "Password Changed Successfully"}, status=status.HTTP_200_OK
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -72,7 +91,10 @@ class SendPasswordResetEmailView(APIView):
     def post(self, request):
         serializer = SendPasswordResetEmailSerializer(data=request.data)
         if serializer.is_valid():
-            return Response({'msg': 'Password Reset Link Sent. Please Check Your Email'}, status=status.HTTP_200_OK)
+            return Response(
+                {"msg": "Password Reset Link Sent. Please Check Your Email"},
+                status=status.HTTP_200_OK,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -80,7 +102,9 @@ class UserPasswordResetView(APIView):
     renderer_classes = [UserRenderer]
 
     def post(self, request, uid, token):
-        serializer = UserPasswordResetSerializer(data=request.data, context={'uid': uid, 'token': token})
+        serializer = UserPasswordResetSerializer(
+            data=request.data, context={"uid": uid, "token": token}
+        )
         if serializer.is_valid():
-            return Response({'msg': 'Password Reset Successful'})
+            return Response({"msg": "Password Reset Successful"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
